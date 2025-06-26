@@ -1,7 +1,10 @@
+import io
 import os
 import shutil
 import uuid
+import zipfile
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Form
 from fastapi.responses import StreamingResponse
 
@@ -12,18 +15,24 @@ app = FastAPI()
 
 @app.post("/onedrive/download")
 def baixar(url: str = Form(...)):
-    pasta = f"/tmp/{uuid.uuid4()}"
-    os.makedirs(pasta, exist_ok=True)
+    load_dotenv()
+    is_docker = os.getenv("IS_DOCKER") == "True"
 
-    print(url, pasta)
+    folder = "/downloads" if is_docker else "./downloads"
 
-    arquivos = baixar_arquivos_onedrive(url, pasta)  # retorna lista de caminhos completos
+    folder = f"{folder}/{uuid.uuid4()}"
+    os.makedirs(folder, exist_ok=True)
 
-    def gerar_streams():
-        for arquivo in arquivos:
-            yield f"--file-boundary\nContent-Disposition: attachment; filename=\"{os.path.basename(arquivo)}\"\n\n".encode()
-            with open(arquivo, "rb") as f:
-                shutil.copyfileobj(f, os)
-            yield b"\n"
+    print(url, folder)
 
-    return StreamingResponse(gerar_streams(), media_type="multipart/mixed; boundary=file-boundary")
+    arquivos = baixar_arquivos_onedrive(url, folder)  # retorna lista de caminhos completos
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        for caminho in arquivos:
+            zip_file.write(caminho, arcname=os.path.basename(caminho))
+    zip_buffer.seek(0)
+
+    return StreamingResponse(zip_buffer, media_type="application/zip", headers={
+        "Content-Disposition": "attachment; filename=arquivos_onedrive.zip"
+    })

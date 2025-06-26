@@ -8,16 +8,25 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from dotenv import load_dotenv
 
 
 def baixar_arquivos_onedrive(url, download_dir):
-    # options = webdriver.ChromeOptions()
+    load_dotenv()
+    is_docker = os.getenv("IS_DOCKER") == "True"
 
-    options = Options()
+    if is_docker:
+        options = Options()
+    else:
+        options = webdriver.ChromeOptions()
+
     options.add_argument("--headless=new")  # Remova esta linha para ver a ‘interface’
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-software-rasterizer")
+
 
     experimental_options = {
         "download.default_directory": download_dir,
@@ -28,9 +37,12 @@ def baixar_arquivos_onedrive(url, download_dir):
     options.add_experimental_option('prefs', experimental_options)
 
     # Iniciar driver
-    driver = webdriver.Chrome(options=options)
-
-    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    if is_docker:
+        service = Service("/usr/bin/chromedriver")
+        driver = webdriver.Chrome(service=service, options=options)
+    else:
+        print("aqui")
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     try:
         # Abrir link público do OneDrive
@@ -59,3 +71,8 @@ def baixar_arquivos_onedrive(url, download_dir):
         driver.quit()
 
     return [os.path.join(download_dir, f) for f in os.listdir(download_dir)]
+
+
+if __name__ == "__main__":
+    URL_TEST = 'https://1drv.ms/u/s!AsVxlxsTVsQrguQVzHVFKcF89upVDg?e=IrdIbC'
+    baixar_arquivos_onedrive(URL_TEST, "/tmp")

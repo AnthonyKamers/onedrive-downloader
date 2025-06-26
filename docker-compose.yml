@@ -1,0 +1,11 @@
+services:
+  onedrive-downloader:
+    build: .
+    container_name: onedrive_downloader
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./downloads:/tmp  # Monta pasta de downloads no host (opcional)
+    environment:
+      - PYTHONUNBUFFERED=1
+    shm_size: "2g"  # Importante para evitar erros de Chrome headless

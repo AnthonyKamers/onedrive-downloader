@@ -1,6 +1,8 @@
+import sys
 import os
 from time import sleep
 
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -8,7 +10,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from dotenv import load_dotenv
 
 
 def baixar_arquivos_onedrive(url, download_dir):
@@ -26,7 +27,6 @@ def baixar_arquivos_onedrive(url, download_dir):
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-software-rasterizer")
-
 
     experimental_options = {
         "download.default_directory": download_dir,
@@ -74,5 +74,5 @@ def baixar_arquivos_onedrive(url, download_dir):
 
 
 if __name__ == "__main__":
-    URL_TEST = 'https://1drv.ms/u/s!AsVxlxsTVsQrguQVzHVFKcF89upVDg?e=IrdIbC'
-    baixar_arquivos_onedrive(URL_TEST, "/tmp")
+    url_test = sys.argv[1]
+    baixar_arquivos_onedrive(url_test, "/tmp")

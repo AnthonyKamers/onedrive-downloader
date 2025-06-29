@@ -5,7 +5,7 @@ services:
     env_file:
       - .env.production
     ports:
-      - "8000:8000"
+      - "${DOCKER_HOST:-8000}:8000"
     volumes:
       - ./downloads:/downloads  # Monta pasta de downloads no host (opcional)
     environment:

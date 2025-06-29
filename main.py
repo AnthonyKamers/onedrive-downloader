@@ -1,6 +1,5 @@
 import io
 import os
-import shutil
 import uuid
 import zipfile
 
